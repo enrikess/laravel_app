@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  # Servicio de la aplicación PHP con Apache
+  app:
+    build:
+      args:
+        user: laravel
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: laravel-app
+    container_name: laravel-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    ports:
+      - "8000:80"
+    volumes:
+      - ./laravel:/var/www
+    networks:
+      - laravel-network
+
+  # Servicio PostgreSQL para la base de datos
+  db:
+    image: postgres:15
+    container_name: laravel-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-laravel}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_USER: ${DB_USERNAME:-laravel}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - laravel-network
+
+networks:
+  laravel-network:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local
